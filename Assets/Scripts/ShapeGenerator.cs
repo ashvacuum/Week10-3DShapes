@@ -11,10 +11,17 @@ public class ShapeGenerator : MonoBehaviour
     [SerializeField] private Shape[] _shapesToDraw;
 
     [SerializeField] private Cube _drawCube;
+
+
+    [SerializeField] private bool _useWireframe = false;
     private void OnPostRender()
     {
         GL.PushMatrix();
-        GL.Begin(GL.LINES);
+        if(_useWireframe)
+            GL.Begin(GL.LINES);
+        else
+            GL.Begin(GL.QUADS);
+
         _lineMaterial.SetPass(0);
 
 
@@ -36,6 +43,8 @@ public class ShapeGenerator : MonoBehaviour
             //DrawLine(shape.actualPoints, actualPerspective);
         }
 
+
+        if(_drawCube == null)  return;
         DrawLine(_drawCube.frontSide);
         DrawLine(_drawCube.backSide);
         DrawLine(_drawCube.leftSide);
@@ -51,15 +60,24 @@ public class ShapeGenerator : MonoBehaviour
         for (int i = 0; i < points.Length; i++)
         {
             var nextShape = (i + 1) % points.Length;
-            var point1 = new Vector3(points[i].x
-                , points[i].y, 0) * (_focalLength / (points[i].z + _focalLength));
+            
+
+            var currentPoint = points[i] * (_focalLength / (points[i].z + _focalLength));
+            var point1 = new Vector3(currentPoint.x, currentPoint.y, 0);
 
             GL.Vertex3(point1.x, point1.y, 0);
 
-            var point2 = new Vector3(points[nextShape].x
-                , points[nextShape].y, 0) * (_focalLength / (points[nextShape].z + _focalLength));
+
+            var nextPoint = points[nextShape] * (_focalLength / (points[nextShape].z + _focalLength));
+            var point2 = new Vector3(nextPoint.x, nextPoint.y, 0);
 
             GL.Vertex3(point2.x, point2.y, 0);
+
         }
+    }
+
+    private static void DebugPoint(Vector3 point)
+    {
+        Debug.Log($"Drawing {point.x}, {point.y}");
     }
 }
